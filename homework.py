@@ -1,5 +1,12 @@
 from typing import Dict, Type
 
+COEFKKAL1 = 18
+COEFKKAL2 = 20
+COEFF_CALORIE_1 = 1.1
+COEFF_CALORIE_2 = 2
+COEF_CALORIE_1 = 0.035
+COEF_CALORIE_2 = 0.029
+
 
 class InfoMessage:
     """Информационное сообщение о тренировке."""
@@ -25,6 +32,7 @@ class InfoMessage:
 
 class Training:
     """Базовый класс тренировки."""
+
     LEN_STEP = 0.65
     M_IN_KM = 1000
 
@@ -50,9 +58,11 @@ class Training:
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
-        info = InfoMessage(self.__class__.__name__,
-                           self.duration, self.get_distance(),
-                           self.get_mean_speed(), self.get_spent_calories())
+        info = InfoMessage(training_type=self.__class__.__name__,
+                           duration=self.duration,
+                           distance=self.get_distance(),
+                           speed=self.get_mean_speed(),
+                           calories=self.get_spent_calories())
         return info
 
 
@@ -60,9 +70,7 @@ class Running(Training):
     """Тренировка: бег."""
 
     def get_spent_calories(self) -> float:
-        coefkkal1 = 18
-        coefkkal2 = 20
-        rslt1 = (coefkkal1 * self.get_mean_speed() - coefkkal2) * self.weight
+        rslt1 = (COEFKKAL1 * self.get_mean_speed() - COEFKKAL2) * self.weight
         return rslt1 / self.M_IN_KM * self.duration * 60
 
 
@@ -78,11 +86,9 @@ class SportsWalking(Training):
         self.height = height
 
     def get_spent_calories(self) -> float:
-        coeff_calorie_1 = 0.035
-        coeff_calorie_2 = 0.029
         rslt1 = self.get_mean_speed() ** 2 // self.height
-        rslt2 = coeff_calorie_2 * self.weight
-        rslt3 = coeff_calorie_1 * self.weight + rslt1 * rslt2
+        rslt2 = COEF_CALORIE_2 * self.weight
+        rslt3 = COEF_CALORIE_1 * self.weight + rslt1 * rslt2
         return rslt3 * self.duration * 60
 
 
@@ -105,18 +111,20 @@ class Swimming(Training):
         return rslt1 / self.M_IN_KM / self.duration
 
     def get_spent_calories(self) -> float:
-        coeff_calorie_1 = 1.1
-        coeff_calorie_2 = 2
-        rslt1 = self.get_mean_speed() + coeff_calorie_1
-        return rslt1 * coeff_calorie_2 * self.weight
+        rslt1 = self.get_mean_speed() + COEFF_CALORIE_1
+        return rslt1 * COEFF_CALORIE_2 * self.weight
+
+
+SPORTS_TYPE: Dict[str, Type[Training]] = {'RUN': Running,
+                                          'WLK': SportsWalking,
+                                          'SWM': Swimming}
 
 
 def read_package(workout_type: str, data: list) -> Training:
     """Прочитать данные полученные от датчиков."""
-    sports_type: Dict[str, Type[Training]] = {'RUN': Running,
-                                              'WLK': SportsWalking,
-                                              'SWM': Swimming}
-    return sports_type[workout_type](*data)
+    if workout_type not in SPORTS_TYPE:
+        raise NotImplementedError('Incorrect key')
+    return SPORTS_TYPE[workout_type](*data)
 
 
 def main(training: Training) -> None:
