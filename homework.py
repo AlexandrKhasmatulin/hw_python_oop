@@ -1,12 +1,5 @@
 from typing import Dict, Type
 
-COEFKKAL1 = 18
-COEFKKAL2 = 20
-COEFF_CALORIE_1 = 1.1
-COEFF_CALORIE_2 = 2
-COEF_CALORIE_1 = 0.035
-COEF_CALORIE_2 = 0.029
-
 
 class InfoMessage:
     """Информационное сообщение о тренировке."""
@@ -68,40 +61,48 @@ class Training:
 
 class Running(Training):
     """Тренировка: бег."""
+    CKKAL1 = 18
+    CKKAL2 = 20
 
     def get_spent_calories(self) -> float:
-        rslt1 = (COEFKKAL1 * self.get_mean_speed() - COEFKKAL2) * self.weight
-        return rslt1 / self.M_IN_KM * self.duration * 60
+        rslt1 = (self.CKKAL1 * self.get_mean_speed() - self.CKKAL2)
+        return rslt1 * self.weight / self.M_IN_KM * self.duration * 60
 
 
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
+    CKKAL1 = 0.035
+    CKKAL2 = 0.029
 
     def __init__(self,
                  action: int,
                  duration: float,
                  weight: float,
-                 height: float, ) -> None:
+                 height: float,
+                 ) -> None:
         super().__init__(action, duration, weight)
         self.height = height
 
     def get_spent_calories(self) -> float:
         rslt1 = self.get_mean_speed() ** 2 // self.height
-        rslt2 = COEF_CALORIE_2 * self.weight
-        rslt3 = COEF_CALORIE_1 * self.weight + rslt1 * rslt2
+        rslt2 = self.CKKAL2 * self.weight
+        rslt3 = self.CKKAL1 * self.weight + rslt1 * rslt2
         return rslt3 * self.duration * 60
 
 
 class Swimming(Training):
     """Тренировка: плавание."""
     LEN_STEP = 1.38
+    CKKAL1 = 1.1
+    CKKAL2 = 2
 
     def __init__(self,
                  action: int,
                  duration: float,
                  weight: float,
                  length_pool: float,
-                 count_pool: float, ) -> None:
+                 count_pool: float,
+                 ) -> None:
         super().__init__(action, duration, weight)
         self.length_pool = length_pool
         self.count_pool = count_pool
@@ -111,8 +112,8 @@ class Swimming(Training):
         return rslt1 / self.M_IN_KM / self.duration
 
     def get_spent_calories(self) -> float:
-        rslt1 = self.get_mean_speed() + COEFF_CALORIE_1
-        return rslt1 * COEFF_CALORIE_2 * self.weight
+        rslt1 = self.get_mean_speed() + self.CKKAL1
+        return rslt1 * self.CKKAL2 * self.weight
 
 
 SPORTS_TYPE: Dict[str, Type[Training]] = {'RUN': Running,
